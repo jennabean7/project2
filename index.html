@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WORDLE - Jenna's Version!</title>
+    <link href="main.css" rel="stylesheet">
+    <script>
+        // Store correct word and guess count as global variables
+        var correctWord = "alert"
+        var guessCount = 0;
+        // BEGIN onload function
+        window.onload = function() {
+            // Set function on 'check guess' button click
+            document.getElementById("checkGuess").onclick = checkWord;
+            // Store guessTable as variable for use later
+            guessTable = document.getElementById("guessTable");
+        }
+        // BEGIN checkWord
+        function checkWord(){
+            // Get the guessed word from textbox
+            var guessWord = document.getElementById("guess").value.toLowerCase()
+            // If guess is too long or short, error and return (break function)
+            if(guessWord.length > 5){
+                alert("Invalid word: too many characters.")
+                return;
+            } // END if
+            if(guessWord.length < 5){
+                alert("Invalid word: not enough characters.")
+                return;
+            } // END if
+
+            // Increment guessCount
+            guessCount++;
+            // Convert guessed word to an array
+            const wordChars = Array.from(guessWord)
+            // Loop through each letter in word
+            for(i = 0; i < guessTable.rows[guessCount-1].cells.length; i++){
+                // Get the TD to insert the letter into, insert the letter
+                placeChar = guessTable.rows[guessCount-1].cells[i]
+                placeChar.innerHTML = wordChars[i];
+                // Get the associated letter on the letterboard
+                lbChar = document.getElementById(wordChars[i])
+                // If letter placement is correct, LB and guess board backgrounds green
+                if(wordChars[i] == correctWord[i]){
+                    placeChar.style.backgroundColor = 'green';
+                    lbChar.style.backgroundColor = 'green';
+                } // END if
+                // If letter is correct but placement is not, LB and GB backgrounds yellow
+                else if(correctWord.includes(wordChars[i])){
+                    placeChar.style.backgroundColor = 'yellow';
+                    lbChar.style.backgroundColor = 'yellow';
+                } // END else if
+                // If letter not in word, backgrounds white
+                else{
+                    placeChar.style.backgroundColor = 'white';
+                    lbChar.style.backgroundColor = 'white';
+                } // END else
+            } // END for
+
+            // If guessed word is the correct word, alert win!!
+            if(guessWord === correctWord.toLowerCase()){
+                alert('You win!')
+                return;
+            } // END if
+            // If out of guesses and word not correct, reveal word
+            if(guessCount == 6){
+                alert('You lose. The word was: ' + correctWord)
+                return;
+            } // END if
+        } // END checkWord
+    </script>
+</head>
+
+<body>
+    
+    <h1 id="header">WORDLE - Jenna's Version</h1>
+    <hr>
+    <div id="guesses">
+        <table id="guessTable">
+            <tr id="guess1">
+                <td class="first"></td>
+                <td class="second"></td>
+                <td class="third"></td>
+                <td class="fourth"></td>
+                <td class="fifth"></td>
+            </tr>
+            <tr id="guess2">
+                <td class="first"></td>
+                <td class="second"></td>
+                <td class="third"></td>
+                <td class="fourth"></td>
+                <td class="fifth"></td>
+            </tr>
+            <tr id="guess3">
+                <td class="first"></td>
+                <td class="second"></td>
+                <td class="third"></td>
+                <td class="fourth"></td>
+                <td class="fifth"></td>
+            </tr>
+            <tr id="guess4">
+                <td class="first"></td>
+                <td class="second"></td>
+                <td class="third"></td>
+                <td class="fourth"></td>
+                <td class="fifth"></td>
+            </tr>
+            <tr id="guess5">
+                <td class="first"></td>
+                <td class="second"></td>
+                <td class="third"></td>
+                <td class="fourth"></td>
+                <td class="fifth"></td>
+            </tr>
+            <tr id="guess6">
+                <td class="first"></td>
+                <td class="second"></td>
+                <td class="third"></td>
+                <td class="fourth"></td>
+                <td class="fifth"></td>
+            </tr>
+        </table>
+    </div>
+    <div id="check">
+       <input type="text" id="guess">
+       <input type="button" id="checkGuess" value="Check Guess">
+    </div>
+    <div id="letterboard">
+        <table>
+            <tr id="top">
+                <td class="letter" id="q">Q</td>
+                <td class="letter" id="w">W</td>
+                <td class="letter" id="e">E</td>
+                <td class="letter" id="r">R</td>
+                <td class="letter" id="t">T</td>
+                <td class="letter" id="y">Y</td>
+                <td class="letter" id="u">U</td>
+                <td class="letter" id="i">I</td>
+                <td class="letter" id="o">O</td>
+                <td class="letter" id="p">P</td>
+            </tr>
+        </table>
+        <table>
+            <tr id="middle">
+                <td class="letter" id="a">A</td>
+                <td class="letter" id="s">S</td>
+                <td class="letter" id="d">D</td>
+                <td class="letter" id="f">F</td>
+                <td class="letter" id="g">G</td>
+                <td class="letter" id="h">H</td>
+                <td class="letter" id="j">J</td>
+                <td class="letter" id="k">K</td>
+                <td class="letter" id="l">L</td>
+            </tr>
+        </table>
+        <table>
+            <tr id="bottom">
+                <td class="letter" id="z">Z</td>
+                <td class="letter" id="x">X</td>
+                <td class="letter" id="c">C</td>
+                <td class="letter" id="v">V</td>
+                <td class="letter" id="b">B</td>
+                <td class="letter" id="n">N</td>
+                <td class="letter" id="m">M</td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+
+<footer>
+
+</footer>
+</html>
