@@ -17,6 +17,10 @@ table{
     text-align: center;
 }
 
+div{
+    min-width: 90%;
+}
+
 div#check{
     margin-top: 15px;
     margin-bottom: 15px;
