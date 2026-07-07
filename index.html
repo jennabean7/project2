@@ -8,66 +8,162 @@
         // Store correct word and guess count as global variables
         var correctWord = "alert"
         var guessCount = 0;
+        var guessedWords = []
         // BEGIN onload function
         window.onload = function() {
             // Set function on 'check guess' button click
             document.getElementById("checkGuess").onclick = checkWord;
-            // Store guessTable as variable for use later
-            guessTable = document.getElementById("guessTable");
+            document.getElementById("enter").onclick = checkWord
+            document.getElementById("reset").onclick = reset;
         }
+
+        // BEGIN validateWord()
+        // Checks if word entered is valid - i.e. correct length, not reused
+        function validateWord(theWord){
+            // Check if each character is alphabetic
+            for(const char of theWord){
+                if(!(/[a-zA-Z]/.test(char))){
+                    alert("Invalid word: non-alphabetic characters.");
+                    return false;
+                } // END if
+            } // END for
+            if(theWord.length > 5){
+                alert("Invalid word: too many characters.")
+                return false;
+            } // END if
+            if(theWord.length < 5){
+                alert("Invalid word: not enough characters.")
+                return false;
+            } // END if
+
+            // Check if word has already been guessed
+            if(guessedWords.includes(theWord)){
+                alert("Already guessed.")
+                return false;
+            } else{
+                guessedWords.push(theWord)
+                return true;
+            } // END if/else
+        } // END validateWord()
+
+        // BEGIN checkLetters()
+        // Checks letters in entered word against those in correct word, determines whether box should be green/yellow/white
+        function checkLetters(guessWord){
+            // Store guessTable as variable
+            var guessTable = document.getElementById("guessTable");
+
+            // Convert the guessed word and correct word into arrays
+            const wordChars = Array.from(guessWord);
+            var correctLetters = Array.from(correctWord)
+
+            // First pass over guessed word to find correct letters
+            wordChars.forEach((character, index) => {
+                // Get the TD to insert the letter into and insert it
+                charPosition = guessTable.rows[guessCount-1].cells[index]
+                charPosition.innerHTML = "<h2>" + character.toUpperCase() + "</h2>";
+                // Get the associated letter on the letterboard
+                lbChar = document.getElementById(character)
+
+                // If the char at index in guessed word is at same index in correct word, mark green
+                if(character == correctWord[index]){
+                    charPosition.style.backgroundColor = 'green';
+                    lbChar.style.backgroundColor = 'green';
+                    charPosition.style.color = 'white';
+                    // Remove it from correct letters so it doesn't get written over in yellow
+                    correctLetters[index] = null;
+                } // END if
+            }) // END forEach
+
+            // Second pass over guessed word to find duplicates or wrong letters
+            wordChars.forEach((character, index) => {
+                // Get TD to insert letter into and insert it
+                charPosition = guessTable.rows[guessCount-1].cells[index]
+                // Get assoc letter on LB
+                lbChar = document.getElementById(character)
+
+                // If we already marked this char, move to next char
+                if(correctLetters[index] == null){
+                    return;
+                } // END if
+
+                // Find the location of the guessed character in the word (check existence)
+                dupeLetter = correctLetters.indexOf(character)
+                // If the character exists, mark it yellow 
+                if(dupeLetter !== -1){
+                    charPosition.style.backgroundColor = 'yellow';
+                    lbChar.style.backgroundColor = 'yellow';
+                    // Remove from correct letters so it doesn't get written over in gray
+                    correctLetters[dupeLetter] = null;
+                } else{
+                    // If the guessed char is not in the correct word, mark it gray
+                    charPosition.style.backgroundColor = 'gray';
+                    lbChar.style.backgroundColor = 'gray';
+                } // END if/else
+            }) // END forEach
+        } // END checkLetters()
+
         // BEGIN checkWord
         function checkWord(){
             // Get the guessed word from textbox
             var guessWord = document.getElementById("guess").value.toLowerCase()
-            // If guess is too long or short, error and return (break function)
-            if(guessWord.length > 5){
-                alert("Invalid word: too many characters.")
-                return;
-            } // END if
-            if(guessWord.length < 5){
-                alert("Invalid word: not enough characters.")
-                return;
+            
+            // Validate the word
+            if(!validateWord(guessWord)){
+                return; // break if not a valid word
             } // END if
 
             // Increment guessCount
             guessCount++;
-            // Convert guessed word to an array
-            const wordChars = Array.from(guessWord)
-            // Loop through each letter in word
-            for(i = 0; i < guessTable.rows[guessCount-1].cells.length; i++){
-                // Get the TD to insert the letter into, insert the letter
-                placeChar = guessTable.rows[guessCount-1].cells[i]
-                placeChar.innerHTML = wordChars[i];
-                // Get the associated letter on the letterboard
-                lbChar = document.getElementById(wordChars[i])
-                // If letter placement is correct, LB and guess board backgrounds green
-                if(wordChars[i] == correctWord[i]){
-                    placeChar.style.backgroundColor = 'green';
-                    lbChar.style.backgroundColor = 'green';
-                } // END if
-                // If letter is correct but placement is not, LB and GB backgrounds yellow
-                else if(correctWord.includes(wordChars[i])){
-                    placeChar.style.backgroundColor = 'yellow';
-                    lbChar.style.backgroundColor = 'yellow';
-                } // END else if
-                // If letter not in word, backgrounds white
-                else{
-                    placeChar.style.backgroundColor = 'white';
-                    lbChar.style.backgroundColor = 'white';
-                } // END else
-            } // END for
+
+            // Check each letter
+            checkLetters(guessWord)
+
+            // Clear the guessed word from input
+            document.getElementById("guess").value = ""
 
             // If guessed word is the correct word, alert win!!
             if(guessWord === correctWord.toLowerCase()){
                 alert('You win!')
+                document.getElementById("checkGuess").style.display = 'none';
+                document.getElementById("reset").style.display = 'inline';
                 return;
             } // END if
             // If out of guesses and word not correct, reveal word
             if(guessCount == 6){
                 alert('You lose. The word was: ' + correctWord)
+                console.log(correctWord);
+                document.getElementById("checkGuess").style.display = 'none';
+                document.getElementById("reset").style.display = 'inline';
                 return;
             } // END if
         } // END checkWord
+
+        // Reset the game
+        // BEGIN reset()
+        function reset(){
+            // Get the TDs in the guess table to reset
+            var guessLetters = document.querySelectorAll("#guessTable td.letter")
+            // Get the TDs in the LB table to reset
+            var lbLetters = document.querySelectorAll("#letterboard td.letter")
+
+            // Reset each TD (remove styling and text)
+            guessLetters.forEach((item) => {
+                item.innerHTML = ''
+                item.style.backgroundColor = 'white';
+                item.style.color = 'black';
+            }) // END forEach
+
+            // Reset each TD (remove background color)
+            lbLetters.forEach((item) => {
+                item.style.backgroundColor = 'white';
+            }) // END forEach
+
+            // Hide the reset button, display the check button, reset guess count and guessed words
+            document.getElementById("reset").style.display = 'none';
+            document.getElementById("checkGuess").style.display = 'inline';
+            guessCount = 0;
+            guessedWords = [];
+        } // END reset
     </script>
 </head>
 
@@ -78,90 +174,94 @@
     <div id="guesses">
         <table id="guessTable">
             <tr id="guess1">
-                <td class="first"></td>
-                <td class="second"></td>
-                <td class="third"></td>
-                <td class="fourth"></td>
-                <td class="fifth"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
             </tr>
             <tr id="guess2">
-                <td class="first"></td>
-                <td class="second"></td>
-                <td class="third"></td>
-                <td class="fourth"></td>
-                <td class="fifth"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
             </tr>
             <tr id="guess3">
-                <td class="first"></td>
-                <td class="second"></td>
-                <td class="third"></td>
-                <td class="fourth"></td>
-                <td class="fifth"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
             </tr>
             <tr id="guess4">
-                <td class="first"></td>
-                <td class="second"></td>
-                <td class="third"></td>
-                <td class="fourth"></td>
-                <td class="fifth"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
             </tr>
             <tr id="guess5">
-                <td class="first"></td>
-                <td class="second"></td>
-                <td class="third"></td>
-                <td class="fourth"></td>
-                <td class="fifth"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
             </tr>
             <tr id="guess6">
-                <td class="first"></td>
-                <td class="second"></td>
-                <td class="third"></td>
-                <td class="fourth"></td>
-                <td class="fifth"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
+                <td class="letter"></td>
             </tr>
         </table>
     </div>
     <div id="check">
        <input type="text" id="guess">
        <input type="button" id="checkGuess" value="Check Guess">
+       <input type="button" id="reset" value="Play again">
     </div>
     <div id="letterboard">
         <table>
             <tr id="top">
-                <td class="letter" id="q">Q</td>
-                <td class="letter" id="w">W</td>
-                <td class="letter" id="e">E</td>
-                <td class="letter" id="r">R</td>
-                <td class="letter" id="t">T</td>
-                <td class="letter" id="y">Y</td>
-                <td class="letter" id="u">U</td>
-                <td class="letter" id="i">I</td>
-                <td class="letter" id="o">O</td>
-                <td class="letter" id="p">P</td>
+                <td class="letter" id="q" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'q'">Q</td>
+                <td class="letter" id="w" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'w'">W</td>
+                <td class="letter" id="e" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'e'">E</td>
+                <td class="letter" id="r" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'r'">R</td>
+                <td class="letter" id="t" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 't'">T</td>
+                <td class="letter" id="y" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'y'">Y</td>
+                <td class="letter" id="u" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'u'">U</td>
+                <td class="letter" id="i"onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'i'">I</td>
+                <td class="letter" id="o" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'o'">O</td>
+                <td class="letter" id="p" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'p'">P</td>
             </tr>
         </table>
         <table>
             <tr id="middle">
-                <td class="letter" id="a">A</td>
-                <td class="letter" id="s">S</td>
-                <td class="letter" id="d">D</td>
-                <td class="letter" id="f">F</td>
-                <td class="letter" id="g">G</td>
-                <td class="letter" id="h">H</td>
-                <td class="letter" id="j">J</td>
-                <td class="letter" id="k">K</td>
-                <td class="letter" id="l">L</td>
+                <td class="letter" id="a" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'a'">A</td>
+                <td class="letter" id="s" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 's'">S</td>
+                <td class="letter" id="d" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'd'">D</td>
+                <td class="letter" id="f" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'f'">F</td>
+                <td class="letter" id="g" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'g'">G</td>
+                <td class="letter" id="h" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'h'">H</td>
+                <td class="letter" id="j" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'j'">J</td>
+                <td class="letter" id="k" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'k'">K</td>
+                <td class="letter" id="l" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'l'">L</td>
             </tr>
         </table>
         <table>
             <tr id="bottom">
-                <td class="letter" id="z">Z</td>
-                <td class="letter" id="x">X</td>
-                <td class="letter" id="c">C</td>
-                <td class="letter" id="v">V</td>
-                <td class="letter" id="b">B</td>
-                <td class="letter" id="n">N</td>
-                <td class="letter" id="m">M</td>
+                <td id="enter">Enter</td>
+                <td class="letter" id="z" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'z'">Z</td>
+                <td class="letter" id="x" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'x'">X</td>
+                <td class="letter" id="c" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'c'">C</td>
+                <td class="letter" id="v" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'v'">V</td>
+                <td class="letter" id="b" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'b'">B</td>
+                <td class="letter" id="n" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'n'">N</td>
+                <td class="letter" id="m" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'm'">M</td>
+                <td class="letter" id="m" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'm'">M</td>
+                <td class="letter" id="del" onclick="document.getElementById('guess').value = document.getElementById('guess').value.slice(0, -1)">del</td>
             </tr>
         </table>
     </div>
