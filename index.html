@@ -6,16 +6,29 @@
     <link href="main.css" rel="stylesheet">
     <script>
         // Store correct word and guess count as global variables
-        var correctWord = "alert"
+        //var correctWord = "alert"
         var guessCount = 0;
         var guessedWords = []
+        correctWord = "";
+        //correctWord = getWord()
         // BEGIN onload function
         window.onload = function() {
-            // Set function on 'check guess' button click
+            // Welcome the user
+            username = prompt("Enter your name to begin:")
+            user = new User(username)
+            alert("Welcome, " + user.name + "!")
+            // Set function on check, enter, and reset button clicks
             document.getElementById("checkGuess").onclick = checkWord;
             document.getElementById("enter").onclick = checkWord
             document.getElementById("reset").onclick = reset;
+            // Get the word to be guessed
+            getWord();
         }
+
+        // Creates an object that stores a user's name
+        function User(name){
+            this.name = name
+        } // END User
 
         // BEGIN validateWord()
         // Checks if word entered is valid - i.e. correct length, not reused
@@ -71,7 +84,12 @@
                     charPosition.style.color = 'white';
                     // Remove it from correct letters so it doesn't get written over in yellow
                     correctLetters[index] = null;
-                } // END if
+                } else{
+                    if(lbChar.style.backgroundColor == 'white'){
+                        lbChar.style.backgroundColor = 'gray';
+                    }
+                    charPosition.style.backgroundColor = 'gray';
+                }
             }) // END forEach
 
             // Second pass over guessed word to find duplicates or wrong letters
@@ -97,7 +115,9 @@
                 } else{
                     // If the guessed char is not in the correct word, mark it gray
                     charPosition.style.backgroundColor = 'gray';
-                    lbChar.style.backgroundColor = 'gray';
+                    if(lbChar.style.backgroundColor == 'white'){
+                        lbChar.style.backgroundColor = 'gray';
+                    }
                 } // END if/else
             }) // END forEach
         } // END checkLetters()
@@ -126,6 +146,7 @@
                 alert('You win!')
                 document.getElementById("checkGuess").style.display = 'none';
                 document.getElementById("reset").style.display = 'inline';
+                document.getElementById("enter").onclick = '';
                 return;
             } // END if
             // If out of guesses and word not correct, reveal word
@@ -134,6 +155,7 @@
                 console.log(correctWord);
                 document.getElementById("checkGuess").style.display = 'none';
                 document.getElementById("reset").style.display = 'inline';
+                document.getElementById("enter").onclick = '';
                 return;
             } // END if
         } // END checkWord
@@ -161,9 +183,29 @@
             // Hide the reset button, display the check button, reset guess count and guessed words
             document.getElementById("reset").style.display = 'none';
             document.getElementById("checkGuess").style.display = 'inline';
+            document.getElementById("enter").onclick = checkWord;
             guessCount = 0;
             guessedWords = [];
+            correctWord = getWord();
         } // END reset
+
+        // Gets a word from the random word API
+        // BEGNI getWord
+        function getWord(){
+            // Create and send the GET request
+            var url = "https://random-word-api.herokuapp.com/word?length=5&diff=3"
+            var req = new XMLHttpRequest();
+            req.open("GET", url, true)
+            req.onreadystatechange = function(){
+                if(req.readyState == 4 && req.status == 200){
+                    data = JSON.parse(this.responseText)
+                    // store the word in correctWord
+                    correctWord = data[0]
+                    console.log(word)
+                } // END if
+            } // END function
+            req.send()
+        } // END getWord()
     </script>
 </head>
 
@@ -259,7 +301,6 @@
                 <td class="letter" id="v" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'v'">V</td>
                 <td class="letter" id="b" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'b'">B</td>
                 <td class="letter" id="n" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'n'">N</td>
-                <td class="letter" id="m" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'm'">M</td>
                 <td class="letter" id="m" onclick="document.getElementById('guess').value = document.getElementById('guess').value + 'm'">M</td>
                 <td class="letter" id="del" onclick="document.getElementById('guess').value = document.getElementById('guess').value.slice(0, -1)">del</td>
             </tr>
