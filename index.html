@@ -109,13 +109,16 @@
                 // If the character exists, mark it yellow 
                 if(dupeLetter !== -1){
                     charPosition.style.backgroundColor = 'yellow';
-                    lbChar.style.backgroundColor = 'yellow';
+                    if(lbChar.style.backgroundColor !== 'green'){
+                        lbChar.style.backgroundColor = 'yellow';
+                    }
+                    
                     // Remove from correct letters so it doesn't get written over in gray
                     correctLetters[dupeLetter] = null;
                 } else{
                     // If the guessed char is not in the correct word, mark it gray
                     charPosition.style.backgroundColor = 'gray';
-                    if(lbChar.style.backgroundColor == 'white'){
+                    if(lbChar.style.backgroundColor !== 'green' && lbChar.style.backgroundColor !== 'yellow'){
                         lbChar.style.backgroundColor = 'gray';
                     }
                 } // END if/else
@@ -193,7 +196,7 @@
         // BEGNI getWord
         function getWord(){
             // Create and send the GET request
-            var url = "https://random-word-api.herokuapp.com/word?length=5&diff=3"
+            var url = "https://random-word-api.herokuapp.com/word?length=5&diff=2"
             var req = new XMLHttpRequest();
             req.open("GET", url, true)
             req.onreadystatechange = function(){
@@ -201,7 +204,7 @@
                     data = JSON.parse(this.responseText)
                     // store the word in correctWord
                     correctWord = data[0]
-                    console.log(word)
+                    console.log(correctWord)
                 } // END if
             } // END function
             req.send()
